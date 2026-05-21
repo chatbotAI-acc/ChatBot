@@ -1,62 +1,36 @@
 from flask import Flask, request, jsonify, render_template
 import os
-import random
 
 app = Flask(__name__)
 
-user_state = {}
-tickets = []
-
+# 🔹 Home (UI page)
 @app.route('/')
 def home():
     return render_template("index.html")
 
-@app.route('/tickets', methods=['GET'])
-def get_tickets():
-    return jsonify(tickets)
-
+# 🔹 Webhook (Dialogflow → Flask)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json()
 
-    text = req['queryResult']['intent']['displayName'].lower()
+    intent = req['queryResult']['intent']['displayName']
 
-    session_id = "user1"
+    if intent == "Login Issue":
+        reply = "Your login issue has been recorded. Please reset your password or wait for support."
 
-    if session_id not in user_state:
-        if "login" in text:
-            user_state[session_id] = "login"
-            reply = "Sure, I can help with login issue. Please describe your problem."
+    elif intent == "Network Issue":
+        reply = "Your network issue has been noted. Please check your connection or try again later."
 
-        elif "network" in text or "vpn" in text:
-            user_state[session_id] = "network"
-            reply = "Network issue detected. Please describe your problem."
-
-        elif "app" in text or "error" in text:
-            user_state[session_id] = "application"
-            reply = "Application issue detected. Please describe your problem."
-
-        else:
-            reply = "Please tell me if your issue is login, network, or application."
+    elif intent == "Application Issue":
+        reply = "Your application issue has been recorded. Please restart the application."
 
     else:
-        issue_type = user_state[session_id]
+        reply = "Your request has been received."
 
-        ticket_id = "TCKT" + str(random.randint(10000, 99999))
+    return jsonify({
+        "fulfillmentText": reply
+    })
 
-        tickets.append({
-            "id": ticket_id,
-            "type": issue_type
-        })
-
-        reply = f"""
-Thank you! Your {issue_type} issue has been recorded.
-Ticket ID: {ticket_id}
-"""
-
-        del user_state[session_id]
-
-    return jsonify({"fulfillmentText": reply})
-
+# 🔹 Run app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
