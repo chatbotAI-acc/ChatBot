@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 # 🔹 Simple memory for conversation
 user_state = {}
+tickets = []
 
 # 🔹 UI Route
 @app.route('/')
@@ -113,9 +114,8 @@ button {
 <!-- Sidebar -->
 <div class="sidebar">
     <h2>AssistIQ</h2>
-    <div>Chat</div>
-    <div>New Conversation</div>
-    <div>My Tickets</div>
+    <div onclick="newChat()">New Conversation</div>
+    <div onclick="showTickets()">My Tickets</div>
     <div>Help</div>
 </div>
 
@@ -165,12 +165,45 @@ async function sendMessage() {
 
     document.getElementById("userInput").value = "";
     chat.scrollTop = chat.scrollHeight;
+
+    function newChat() {
+    document.getElementById("chat").innerHTML =
+        '<div class="message bot">Hi! I\'m AssistIQ. How can I help you?</div>';
+}
+
+async function showTickets() {
+    let chat = document.getElementById("chat");
+
+    let response = await fetch("/tickets");
+    let data = await response.json();
+
+    chat.innerHTML = "<h3>Your Tickets:</h3>";
+
+    if (data.length === 0) {
+        chat.innerHTML += "<p>No tickets found</p>";
+        return;
+    }
+
+    data.forEach(ticket => {
+        chat.innerHTML += `
+            <div class="message bot">
+                Ticket ID: ${ticket.id} <br>
+                Type: ${ticket.type}
+            </div>
+        `;
+    });
+}
+
 }
 </script>
 
 </body>
 </html>
 """
+# 🔹 API Route to get tickets
+@app.route('/tickets', methods=['GET'])
+def get_tickets():
+    return jsonify(tickets)
 
 # 🔹 Webhook Logic (Conversation Flow)
 @app.route('/webhook', methods=['POST'])
@@ -203,6 +236,11 @@ def webhook():
         issue_type = user_state[session_id]
 
         ticket_id = "TCKT" + str(random.randint(10000, 99999))
+
+        tickets.append({
+    "id": ticket_id,
+    "type": issue_type
+})
 
         reply = f"""
 Thank you! Your {issue_type} issue has been recorded.
