@@ -5,160 +5,54 @@ import os
 app = Flask(__name__)
 
 # 🔹 UI Route
-@app.route('/')
-def home():
-    return """
-<!DOCTYPE html>
-<html>
-<head>
-<title>AssistIQ</title>
+# 🔹 Temporary memory (simple)
+user_state = {}
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial;
-    display: flex;
-}
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    req = request.get_json()
 
-/* Sidebar */
-.sidebar {
-    width: 220px;
-    background: #0d6efd;
-    color: white;
-    height: 100vh;
-    padding: 20px;
-}
+    text = req['queryResult']['intent']['displayName'].lower()
 
-.sidebar h2 {
-    margin-bottom: 30px;
-}
+    # Simulate user session (basic)
+    session_id = "user1"
 
-.sidebar div {
-    margin: 15px 0;
-    cursor: pointer;
-}
+    # Step 1: Detect issue type
+    if session_id not in user_state:
+        if "login" in text:
+            user_state[session_id] = "login"
+            reply = "Sure, I can help with login issue. Please describe your problem."
 
-/* Main Chat Area */
-.main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
+        elif "network" in text or "vpn" in text:
+            user_state[session_id] = "network"
+            reply = "Network issue detected. Please describe your problem."
 
-.header {
-    padding: 15px;
-    border-bottom: 1px solid #ddd;
-    font-size: 20px;
-}
+        elif "app" in text or "error" in text:
+            user_state[session_id] = "application"
+            reply = "Application issue detected. Please describe your problem."
 
-.chat-container {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background: #f5f5f5;
-}
+        else:
+            reply = "Please tell me if your issue is login, network, or application."
 
-/* Messages */
-.message {
-    margin: 10px 0;
-    max-width: 60%;
-    padding: 10px;
-    border-radius: 10px;
-}
+    # Step 2: User describes issue
+    else:
+        issue_type = user_state[session_id]
 
-.user {
-    background: #0d6efd;
-    color: white;
-    margin-left: auto;
-}
+        import random
+        ticket_id = "TCKT" + str(random.randint(10000, 99999))
 
-.bot {
-    background: white;
-    border: 1px solid #ddd;
-}
+        reply = f"""
+        Thank you! Your {issue_type} issue has been recorded.
+        Our team will get back to you soon.
+        Ticket ID: {ticket_id}
+        """
 
-/* Input */
-.input-box {
-    display: flex;
-    padding: 10px;
-    border-top: 1px solid #ddd;
-}
+        # Reset state
+        del user_state[session_id]
 
-input {
-    flex: 1;
-    padding: 10px;
-}
-
-button {
-    padding: 10px 15px;
-    background: #0d6efd;
-    color: white;
-    border: none;
-}
-</style>
-
-</head>
-
-<body>
-
-<!-- Sidebar -->
-<div class="sidebar">
-    <h2>AssistIQ</h2>
-    <div>Chat</div>
-    <div>New Conversation</div>
-    <div>My Tickets</div>
-    <div>Help</div>
-</div>
-
-<!-- Main -->
-<div class="main">
-
-    <div class="header">
-        AssistIQ – AI Chatbot
-    </div>
-
-    <div id="chat" class="chat-container">
-        <div class="message bot">Hi! I'm AssistIQ. How can I help you?</div>
-    </div>
-
-    <div class="input-box">
-        <input id="userInput" placeholder="Type your message..." />
-        <button onclick="sendMessage()">Send</button>
-    </div>
-
-</div>
-
-<script>
-async function sendMessage() {
-    let input = document.getElementById("userInput").value;
-    let chat = document.getElementById("chat");
-
-    if (!input) return;
-
-    chat.innerHTML += `<div class="message user">${input}</div>`;
-
-    let response = await fetch("/webhook", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            queryResult: {
-                intent: { displayName: input }
-            }
-        })
-    });
-
-    let data = await response.json();
-
-    chat.innerHTML += `<div class="message bot">${data.fulfillmentText}</div>`;
-
-    document.getElementById("userInput").value = "";
-    chat.scrollTop = chat.scrollHeight;
-}
-</script>
-
-</body>
-</html>
-"""
+    return jsonify({
+        "fulfillmentText": reply
+    })
 
 # 🔹 Webhook Route
 @app.route('/webhook', methods=['POST'])
