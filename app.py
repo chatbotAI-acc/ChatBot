@@ -141,34 +141,9 @@ button {
 </div>
 
 <script>
-async function sendMessage() {
-    let input = document.getElementById("userInput").value;
-    let chat = document.getElementById("chat");
-
-    if (!input) return;
-
-    chat.innerHTML += `<div class="message user">${input}</div>`;
-
-    let response = await fetch("/webhook", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            queryResult: {
-                intent: { displayName: input.toLowerCase() }
-            }
-        })
-    });
-
-    let data = await response.json();
-
-    chat.innerHTML += `<div class="message bot">${data.fulfillmentText}</div>`;
-
-    document.getElementById("userInput").value = "";
-    chat.scrollTop = chat.scrollHeight;
-
-    function newChat() {
+function newChat() {
     document.getElementById("chat").innerHTML =
-        '<div class="message bot">Hi! I\'m AssistIQ. How can I help you?</div>';
+        '<div class="message bot">Hi! I\\'m AssistIQ. How can I help you?</div>';
 }
 
 async function showTickets() {
@@ -194,6 +169,30 @@ async function showTickets() {
     });
 }
 
+async function sendMessage() {
+    let input = document.getElementById("userInput").value;
+    let chat = document.getElementById("chat");
+
+    if (!input) return;
+
+    chat.innerHTML += `<div class="message user">${input}</div>`;
+
+    let response = await fetch("/webhook", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            queryResult: {
+                intent: { displayName: input.toLowerCase() }
+            }
+        })
+    });
+
+    let data = await response.json();
+
+    chat.innerHTML += `<div class="message bot">${data.fulfillmentText}</div>`;
+
+    document.getElementById("userInput").value = "";
+    chat.scrollTop = chat.scrollHeight;
 }
 </script>
 
