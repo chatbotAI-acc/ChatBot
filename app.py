@@ -1,23 +1,187 @@
 from flask import Flask, request, jsonify
 import os
+import random
 
-# 🔹 Create Flask app
 app = Flask(__name__)
 
-# 🔹 UI Route
-# 🔹 Temporary memory (simple)
+# 🔹 Simple memory for conversation
 user_state = {}
 
+# 🔹 UI Route
+@app.route('/')
+def home():
+    return """
+<!DOCTYPE html>
+<html>
+<head>
+<title>AssistIQ</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background: #0d6efd;
+    color: white;
+    height: 100vh;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    margin-bottom: 30px;
+}
+
+.sidebar div {
+    margin: 15px 0;
+}
+
+/* Main Chat Area */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.status {
+    color: green;
+}
+
+/* Chat */
+.chat-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f5f5f5;
+}
+
+.message {
+    margin: 10px 0;
+    max-width: 60%;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.user {
+    background: #0d6efd;
+    color: white;
+    margin-left: auto;
+}
+
+.bot {
+    background: white;
+    border: 1px solid #ddd;
+}
+
+/* Input */
+.input-box {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+}
+
+button {
+    padding: 10px 15px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>AssistIQ</h2>
+    <div>Chat</div>
+    <div>New Conversation</div>
+    <div>My Tickets</div>
+    <div>Help</div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+    <div class="header">
+        AssistIQ – AI Chatbot
+        <span class="status">● Online</span>
+    </div>
+
+    <div id="chat" class="chat-container">
+        <div class="message bot">
+            Hi! I'm AssistIQ. How can I help you today?
+        </div>
+    </div>
+
+    <div class="input-box">
+        <input id="userInput" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+async function sendMessage() {
+    let input = document.getElementById("userInput").value;
+    let chat = document.getElementById("chat");
+
+    if (!input) return;
+
+    chat.innerHTML += `<div class="message user">${input}</div>`;
+
+    let response = await fetch("/webhook", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            queryResult: {
+                intent: { displayName: input.toLowerCase() }
+            }
+        })
+    });
+
+    let data = await response.json();
+
+    chat.innerHTML += `<div class="message bot">${data.fulfillmentText}</div>`;
+
+    document.getElementById("userInput").value = "";
+    chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
+</body>
+</html>
+"""
+
+# 🔹 Webhook Logic (Conversation Flow)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json()
 
     text = req['queryResult']['intent']['displayName'].lower()
 
-    # Simulate user session (basic)
     session_id = "user1"
 
-    # Step 1: Detect issue type
+    # Step 1: Identify issue
     if session_id not in user_state:
         if "login" in text:
             user_state[session_id] = "login"
@@ -34,49 +198,25 @@ def webhook():
         else:
             reply = "Please tell me if your issue is login, network, or application."
 
-    # Step 2: User describes issue
+    # Step 2: Create ticket
     else:
         issue_type = user_state[session_id]
 
-        import random
         ticket_id = "TCKT" + str(random.randint(10000, 99999))
 
         reply = f"""
-        Thank you! Your {issue_type} issue has been recorded.
-        Our team will get back to you soon.
-        Ticket ID: {ticket_id}
-        """
+Thank you! Your {issue_type} issue has been recorded.
+Our team will get back to you soon.
+Ticket ID: {ticket_id}
+"""
 
-        # Reset state
         del user_state[session_id]
 
     return jsonify({
         "fulfillmentText": reply
     })
 
-# 🔹 Webhook Route
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    req = request.get_json()
 
-    intent = req['queryResult']['intent']['displayName']
-
-    if intent == "Login Issue":
-        reply = "Your login issue has been recorded. Please reset your password."
-
-    elif intent == "Network Issue":
-        reply = "Your network issue has been noted. Please check your connection."
-
-    elif intent == "Application Issue":
-        reply = "Your application issue has been recorded. Please restart the app."
-
-    else:
-        reply = "Please type: Login Issue, Network Issue, or Application Issue"
-
-    return jsonify({
-        "fulfillmentText": reply
-    })
-
-# 🔹 Run App
+# 🔹 Run app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
