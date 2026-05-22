@@ -19,17 +19,13 @@
             width: 220px;
             background: #111827;
             padding: 20px;
-            color: white;
         }
 
         .logo {
-            width: 140px;
-            margin-bottom: 20px;
-        }
-
-        .status {
-            font-size: 13px;
-            color: #22c55e;
+            width: 130px;
+            background: rgba(255,255,255,0.08);
+            padding: 8px;
+            border-radius: 8px;
         }
 
         /* Main */
@@ -51,11 +47,6 @@
             border-radius: 10px;
             margin-bottom: 12px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            transition: 0.2s;
-        }
-
-        .ticket:hover {
-            transform: translateY(-2px);
         }
 
         .id {
@@ -81,40 +72,57 @@
             cursor: pointer;
         }
 
-        .pending {
-            background: #facc15;
-        }
+        .pending { background: #facc15; }
+        .close { background: #22c55e; color: white; }
 
-        .close {
-            background: #22c55e;
-            color: white;
-        }
-
-        /* Chatbot Styling */
+        /* Chatbot Theme */
         df-messenger {
             --df-messenger-button-titlebar-color: #2563eb;
             --df-messenger-chat-background-color: #f9fafb;
             --df-messenger-user-message: #2563eb;
         }
 
-        /* 🔥 Replace Dialogflow Icon */
+        /* Replace floating icon */
         df-messenger::part(chat-button) {
             background-image: url("{{ url_for('static', filename='icon.png') }}");
             background-size: cover;
         }
 
-        /* 🔥 Online blinking dot */
+        /* HEADER UPGRADE */
         df-messenger::part(titlebar) {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding-left: 50px;
             position: relative;
         }
 
+        /* Bot icon in header */
         df-messenger::part(titlebar)::before {
+            content: "";
+            background-image: url("{{ url_for('static', filename='icon.png') }}");
+            background-size: cover;
+            width: 26px;
+            height: 26px;
+            position: absolute;
+            left: 12px;
+            top: 10px;
+            border-radius: 50%;
+        }
+
+        /* Online text */
+        df-messenger::part(titlebar)::after {
+            content: "Online";
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        /* Green blinking online status dot */
+        df-messenger::part(titlebar) span::before {
             content: "●";
             color: #22c55e;
-            position: absolute;
-            right: 12px;
-            top: 12px;
-            font-size: 14px;
+            margin-right: 4px;
             animation: blink 1.5s infinite;
         }
 
@@ -132,7 +140,6 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
-        <div class="status">● Online</div>
     </div>
 
     <!-- Main -->
