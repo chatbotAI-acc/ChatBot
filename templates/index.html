@@ -1,136 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AssistIQ</title>
+    <img src="{{ url_for('static', filename='logo.png') }}">
 
     <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
 
     <style>
         body {
             margin: 0;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: Arial;
             display: flex;
             height: 100vh;
             background: #f5f7fa;
         }
 
-        /* Sidebar */
         .sidebar {
-            width: 220px;
+            width: 200px;
             background: #1f2937;
             color: white;
             padding: 20px;
         }
 
-        .sidebar h2 {
-            margin-bottom: 20px;
-        }
-
-        .status {
-            color: #22c55e;
-            font-size: 12px;
-        }
-
-        /* Main */
         .main {
             flex: 1;
             padding: 20px;
         }
 
-        .tickets {
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-
         .ticket {
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .ticket:last-child {
-            border-bottom: none;
-        }
-
-        .ticket-id {
-            font-weight: bold;
-            color: #2563eb;
-        }
-
-        .ticket-type {
-            color: #555;
-            font-size: 14px;
-        }
-
-        .ticket-status {
-            font-size: 13px;
-            margin-top: 5px;
-        }
-
-        .actions { 
-            margin-top: 10px;
-        }
-
-        .actions button {
-            margin-right: 5px;
-            padding: 5px 10px;
-            border: none;
+            background: white;
+            margin-bottom: 10px;
+            padding: 10px;
             border-radius: 5px;
+        }
+
+        button {
+            margin-top: 5px;
+            padding: 5px;
             cursor: pointer;
         }
-
-        .pending-btn {
-            background: #ffc107;
-        }
-
-        .close-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        df-messenger {
-  --df-messenger-button-titlebar-color: #ffc107;
-
-  /* Chat area */
-  --df-messenger-chat-background-color: transparent;
-
-  /* Messages */
-  --df-messenger-bot-message: #ffc107;
-  --df-messenger-user-message: #ffffff;
-
-  /* Text */
-  --df-messenger-font-color: #000000;
-
-  /* suggestion chips */
-  --df-messenger-input-box-color: transparent;
-}
-
-/* 🔹 Remove input box background */
-df-messenger::part(input-box) {
-  background: transparent !important;
-  border: none !important;
-}
-
-/* 🔹 Remove suggestion chips background */
-df-messenger::part(chips) {
-  background: transparent !important;
-}
-
-/* 🔹 Fix bot message text */
-df-messenger::part(bot-message) {
-  color: white;
-}
-
-/* 🔹 Fix user message */
-df-messenger::part(user-message) {
-  color: black;
-}
-
-/* 🔹 Optional: cleaner input text */
-df-messenger::part(input) {
-  background: transparent;
-  color: black;
-}
     </style>
 </head>
 
@@ -139,17 +46,13 @@ df-messenger::part(input) {
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>AssistIQ</h2>
-        <p>Support Dashboard</p>
-        <p class="status">● Online</p>
+        <p>Online</p>
     </div>
 
     <!-- Main -->
     <div class="main">
-        <h2>Support Tickets</h2>
-
-        <div class="tickets" id="ticketList">
-            Loading tickets...
-        </div>
+        <h3>Tickets</h3>
+        <div id="list">Loading...</div>
     </div>
 
     <!-- Chatbot -->
@@ -161,56 +64,50 @@ df-messenger::part(input) {
     </df-messenger>
 
     <script>
-        async function loadTickets() {
+        async function load() {
             let res = await fetch('/tickets');
             let data = await res.json();
-
-            let container = document.getElementById("ticketList");
+            let div = document.getElementById("list");
 
             if (data.length === 0) {
-                container.innerHTML = "<div class='ticket'>No active tickets</div>";
+                div.innerHTML = "No tickets";
                 return;
             }
 
-            container.innerHTML = "";
+            div.innerHTML = "";
 
             data.forEach(t => {
 
-                let color = "#16a34a";
+                let color = "green";
+                if (t.status === "Open") color = "red";
+                if (t.status === "Pending") color = "orange";
 
-                if (t.status === "Open") color = "#ef4444";
-                if (t.status === "Pending") color = "#f59e0b";
-                if (t.status === "Closed") color = "#22c55e";
-
-                container.innerHTML += `
+                div.innerHTML += `
                     <div class="ticket">
-                        <div class="ticket-id">${t.id}</div>
-                        <div class="ticket-type">${t.type}</div>
-                        <div class="ticket-status" style="color:${color}">
-                            Status: ${t.status}
-                        </div>
+                        <b>${t.id}</b><br>
+                        ${t.type}<br>
+                        <span style="color:${color}">${t.status}</span><br>
 
-                        <div class="actions">
-                            <button class="pending-btn" onclick="updateStatus('${t.id}','Pending')">Pending</button>
-                            <button class="close-btn" onclick="updateStatus('${t.id}','Closed')">Close</button>
-                        </div>
+                        ${t.status !== "Closed" ? `
+                        <button onclick="update('${t.id}','Pending')">Pending</button>
+                        <button onclick="update('${t.id}','Closed')">Close</button>
+                        ` : ""}
                     </div>
                 `;
             });
         }
 
-        async function updateStatus(id, status) {
+        async function update(id, status) {
             await fetch('/update_ticket', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, status: status})
+                body: JSON.stringify({id, status})
             });
-
-            loadTickets();
+            load();
         }
 
-        setInterval(loadTickets, 3000);
-        loadTickets();
+        setInterval(load, 3000);
+        load();
     </script>
 
 </body>
