@@ -90,25 +90,46 @@
 
         df-messenger {
   --df-messenger-button-titlebar-color: #ffc107;
-  --df-messenger-chat-background-color: #000000;
 
+  /* Chat area */
+  --df-messenger-chat-background-color: transparent;
+
+  /* Messages */
   --df-messenger-bot-message: #ffc107;
-  --df-messenger-font-color: #ffffff;
+  --df-messenger-user-message: #ffffff;
 
-  --df-messenger-user-message: #000000;;
+  /* Text */
+  --df-messenger-font-color: #000000;
 
-  border: none;
-  background: transparent;
-  box-shadow: none;
+  /* suggestion chips */
+  --df-messenger-input-box-color: transparent;
 }
 
-/* Optional: better contrast */
+/* 🔹 Remove input box background */
+df-messenger::part(input-box) {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* 🔹 Remove suggestion chips background */
+df-messenger::part(chips) {
+  background: transparent !important;
+}
+
+/* 🔹 Fix bot message text */
 df-messenger::part(bot-message) {
   color: white;
 }
 
+/* 🔹 Fix user message */
 df-messenger::part(user-message) {
-  color: white;
+  color: black;
+}
+
+/* 🔹 Optional: cleaner input text */
+df-messenger::part(input) {
+  background: transparent;
+  color: black;
 }
     </style>
 </head>
