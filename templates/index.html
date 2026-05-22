@@ -11,21 +11,35 @@
             font-family: 'Segoe UI', sans-serif;
             display: flex;
             height: 100vh;
-            background: #f3f4f6;
+            background: #f5f7fa;
         }
 
         /* Sidebar */
         .sidebar {
             width: 220px;
-            background: #111827;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
             padding: 20px;
         }
 
-        .logo {
-            width: 130px;
-            background: rgba(255,255,255,0.08);
-            padding: 8px;
+        .sidebar h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .menu {
+            margin-top: 30px;
+        }
+
+        .menu div {
+            padding: 10px;
             border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .menu div:hover {
+            background: #f3f4f6;
         }
 
         /* Main */
@@ -34,19 +48,41 @@
             padding: 30px;
         }
 
-        .title {
-            font-size: 20px;
-            font-weight: 600;
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
 
-        /* Ticket Card */
+        .header-left h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .header-left p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Online badge */
+        .status {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        /* Tickets */
         .ticket {
             background: white;
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
         }
 
         .id {
@@ -75,61 +111,10 @@
         .pending { background: #facc15; }
         .close { background: #22c55e; color: white; }
 
-        /* Chatbot Theme */
+        /* Chatbot */
         df-messenger {
             --df-messenger-button-titlebar-color: #2563eb;
-            --df-messenger-chat-background-color: #f9fafb;
             --df-messenger-user-message: #2563eb;
-        }
-
-        /* Replace floating icon */
-        df-messenger::part(chat-button) {
-            background-image: url("{{ url_for('static', filename='icon.png') }}");
-            background-size: cover;
-        }
-
-        /* HEADER UPGRADE */
-        df-messenger::part(titlebar) {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding-left: 50px;
-            position: relative;
-        }
-
-        /* Bot icon in header */
-        df-messenger::part(titlebar)::before {
-            content: "";
-            background-image: url("{{ url_for('static', filename='icon.png') }}");
-            background-size: cover;
-            width: 26px;
-            height: 26px;
-            position: absolute;
-            left: 12px;
-            top: 10px;
-            border-radius: 50%;
-        }
-
-        /* Online text */
-        df-messenger::part(titlebar)::after {
-            content: "Online";
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px;
-        }
-
-        /* Green blinking online status dot */
-        df-messenger::part(titlebar) span::before {
-            content: "●";
-            color: #22c55e;
-            margin-right: 4px;
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
         }
 
     </style>
@@ -139,13 +124,31 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+        <h2>AssistIQ</h2>
+
+        <div class="menu">
+            <div>💬 Chat</div>
+            <div>➕ New Request</div>
+            <div>🎫 My Tickets</div>
+        </div>
     </div>
 
     <!-- Main -->
     <div class="main">
-        <div class="title">Support Tickets</div>
+
+        <!-- 🔥 Header like your reference -->
+        <div class="header">
+            <div class="header-left">
+                <h1>Welcome User 👋</h1>
+                <p>Your intelligent service desk assistant</p>
+            </div>
+
+            <div class="status">● Online</div>
+        </div>
+
+        <!-- Tickets -->
         <div id="list">Loading...</div>
+
     </div>
 
     <!-- Chatbot -->
@@ -206,4 +209,4 @@
     </script>
 
 </body>
-</html>
+</html>ß
