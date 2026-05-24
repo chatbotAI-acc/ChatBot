@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # MongoDB Connection String Update with your credentials
 client = MongoClient("mongodb+srv://admin:MvbFgc!39CW223_@ticketsclstr.tfudn33.mongodb.net/")
-db = client["assistiq"]
+db = client["chatbot"]
 tickets_collection = db["tickets"]
 
 # Home page route for the dashboard
